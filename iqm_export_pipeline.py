@@ -143,20 +143,26 @@ class IQMExportPipeline_Panel(Panel):
             row = layout.row()
             row.prop(settings, "armature_source")
 
-            row = layout.row()
             if settings.armature_source:
+                action_items_row = layout.row()
                 # The left column, containing the list.
-                col = row.column(align=True)
+                ui_list_col = action_items_row.column(align=True)
 
-                colrow = col.row(align=True)
-                colrow.label(text="Action:", icon="ARMATURE_DATA")
-                colrow.label(text="Start Frame:")
-                colrow.label(text="End Frame:")
-                colrow.label(text="FPS:")
-                colrow.label(text="Looping:")
+                ui_list_split = ui_list_col.split(factor=0.5)
 
-                colrow = col.row(align=True)
-                colrow.template_list(
+                action_side = ui_list_split.row()
+                action_side.label(text="Action:", icon="ARMATURE_DATA")
+
+                property_side = ui_list_split.row(align=True)
+                ab = property_side.split(factor=0.5)
+                cd = property_side.split(factor=0.5)
+
+                ab.label(text="Start Frame:")
+                ab.label(text="End Frame:")
+                cd.label(text="FPS:")
+                cd.label(text="Looping:")
+
+                ui_list_col.template_list(
                     listtype_name="UI_UL_ActionItemList",
                     list_id="DATA_UL_actions",
                     dataptr=settings.armature_source,
@@ -166,10 +172,12 @@ class IQMExportPipeline_Panel(Panel):
                 )
 
                 # The right column, containing the controls.
-                col = row.column(align=True)
-                col.operator("action_items.list_add", text="", icon="ADD")
-                col.operator("action_items.list_remove", text="", icon="REMOVE")
+                button_col = action_items_row.column(align=True)
+                button_col.label(text="")
+                button_col.operator("action_items.list_add", text="", icon="ADD")
+                button_col.operator("action_items.list_remove", text="", icon="REMOVE")
             else:
+                row = layout.row()
                 row.label(text="Choose an Armature to list its actions", icon="ERROR")
 
         row = layout.row()

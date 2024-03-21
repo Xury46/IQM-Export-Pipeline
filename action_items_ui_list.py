@@ -56,12 +56,20 @@ class ACTIONITEMS_UL_ActionItemList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index, flt_flag):
         if self.layout_type in {"DEFAULT", "COMPACT"}:
             row = layout.row()
-            row.label(icon="ARMATURE_DATA")
-            row.prop(data=item, property="action", text="")
-            row.prop(data=item, property="frame_start", text="")
-            row.prop(data=item, property="frame_end", text="")
-            row.prop(data=item, property="fps", text="")
-            row.prop(data=item, property="looping", text="")
+            split = row.split(factor=0.5)
+
+            action_side = split.row()
+            action_side.label(icon="ARMATURE_DATA")
+            action_side.prop(data=item, property="action", text="")
+
+            property_side = split.row(align=True)
+            ab = property_side.split(factor=0.5)
+            cd = property_side.split(factor=0.5)
+
+            ab.prop(data=item, property="frame_start", text="")
+            ab.prop(data=item, property="frame_end", text="")
+            cd.prop(data=item, property="fps", text="")
+            cd.prop(data=item, property="looping", text="")
 
         elif self.layout_type in {"GRID"}:
             layout.alignment = "CENTER"
