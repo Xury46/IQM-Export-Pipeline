@@ -148,7 +148,15 @@ class IQMExportPipeline_Panel(Panel):
                 # The left column, containing the list.
                 col = row.column(align=True)
 
-                col.template_list(
+                colrow = col.row(align=True)
+                colrow.label(text="Action:", icon="ARMATURE_DATA")
+                colrow.label(text="Start Frame:")
+                colrow.label(text="End Frame:")
+                colrow.label(text="FPS:")
+                colrow.label(text="Looping:")
+
+                colrow = col.row(align=True)
+                colrow.template_list(
                     listtype_name="UI_UL_ActionItemList",
                     list_id="DATA_UL_actions",
                     dataptr=settings.armature_source,
