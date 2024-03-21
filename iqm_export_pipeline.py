@@ -143,26 +143,42 @@ class IQMExportPipeline_Panel(Panel):
             row = layout.row()
             row.prop(settings, "armature_source")
 
+            action_items_box = layout.box()
             if settings.armature_source:
-                action_items_row = layout.row()
-                # The left column, containing the list.
-                ui_list_col = action_items_row.column(align=True)
 
-                ui_list_split = ui_list_col.split(factor=0.5)
+                # Action Items Header
+                action_items_header = action_items_box.row()
 
-                action_side = ui_list_split.row()
-                action_side.label(text="Action:", icon="ARMATURE_DATA")
+                # Make the left column which contains the header labels.
+                labels_col = action_items_header.column(align=False)
 
-                property_side = ui_list_split.row(align=True)
-                ab = property_side.split(factor=0.5)
-                cd = property_side.split(factor=0.5)
+                # Make a row to put the Action label in
+                action_prop_split = labels_col.split(factor=0.5)
+                action_side = action_prop_split.row()
+                action_side.label(icon="ARMATURE_DATA")
+                action_side.label(text="Action:")
 
-                ab.label(text="Start Frame:")
-                ab.label(text="End Frame:")
-                cd.label(text="FPS:")
-                cd.label(text="Looping:")
+                # Make a row to evenly space the properties in
+                property_side = action_prop_split.grid_flow(row_major=False, columns=4, even_columns=True)
+                property_side.label(text="Start:")
+                property_side.label(text="End:")
+                property_side.label(text="FPS:")
+                property_side.label(text="Loop:")
 
-                ui_list_col.template_list(
+                # Make the right column which contains a spacer to align with the buttons below.
+                spacer_col = action_items_header.column(align=False)
+                spacer_row = spacer_col.row()
+                spacer_row.separator_spacer()
+                spacer_row.separator_spacer()
+
+                # Action Items UI List
+                action_items_ui_list = action_items_box.row()
+
+                # Make the left column which contains the ui list.
+                props_col = action_items_ui_list.column(align=False)
+
+                # Draw the UI list
+                props_col.template_list(
                     listtype_name="UI_UL_ActionItemList",
                     list_id="DATA_UL_actions",
                     dataptr=settings.armature_source,
@@ -171,13 +187,13 @@ class IQMExportPipeline_Panel(Panel):
                     active_propname="active_action_item_index",
                 )
 
-                # The right column, containing the controls.
-                button_col = action_items_row.column(align=True)
-                button_col.label(text="")
+                # Make the right column which contains a the buttons for manupulating the UI list.
+                button_col = action_items_ui_list.column(align=False)
                 button_col.operator("action_items.list_add", text="", icon="ADD")
                 button_col.operator("action_items.list_remove", text="", icon="REMOVE")
+
             else:
-                row = layout.row()
+                row = action_items_box.row()
                 row.label(text="Choose an Armature to list its actions", icon="ERROR")
 
         row = layout.row()
