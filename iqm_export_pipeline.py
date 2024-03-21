@@ -140,20 +140,19 @@ class IQMExportPipeline_Panel(Panel):
             row = layout.row()
             row.prop(settings, "action_list_string")
         elif settings.action_list_source == "action_list":
-            row = layout.row()
+            action_items_box = layout.box()
+            row = action_items_box.row()
             row.prop(settings, "armature_source")
 
-            action_items_box = layout.box()
             if settings.armature_source:
-
-                # Action Items Header
-                action_items_header = action_items_box.row()
-
-                # Make the left column which contains the header labels.
-                labels_col = action_items_header.column(align=False)
+                PROPERTY_BUTTON_SPLIT_FACTOR = 0.9
+                
+                # Make a split to put the header labels on the left, and a spacer on the right
+                action_items_header_row = action_items_box.row()
+                action_items_header_split = action_items_header_row.split(factor=PROPERTY_BUTTON_SPLIT_FACTOR)
 
                 # Make a row to put the Action label in
-                action_prop_split = labels_col.split(factor=0.5)
+                action_prop_split = action_items_header_split.split(factor=0.5)
                 action_side = action_prop_split.row()
                 action_side.label(icon="ARMATURE_DATA")
                 action_side.label(text="Action:")
@@ -165,20 +164,12 @@ class IQMExportPipeline_Panel(Panel):
                 property_side.label(text="FPS:")
                 property_side.label(text="Loop:")
 
-                # Make the right column which contains a spacer to align with the buttons below.
-                spacer_col = action_items_header.column(align=False)
-                spacer_row = spacer_col.row()
-                spacer_row.separator_spacer()
-                spacer_row.separator_spacer()
-
                 # Action Items UI List
-                action_items_ui_list = action_items_box.row()
-
-                # Make the left column which contains the ui list.
-                props_col = action_items_ui_list.column(align=False)
+                action_items_ui_list_row = action_items_box.row()
+                action_items_ui_list_split = action_items_ui_list_row.split(factor=PROPERTY_BUTTON_SPLIT_FACTOR)
 
                 # Draw the UI list
-                props_col.template_list(
+                action_items_ui_list_split.template_list(
                     listtype_name="UI_UL_ActionItemList",
                     list_id="DATA_UL_actions",
                     dataptr=settings.armature_source,
@@ -188,7 +179,7 @@ class IQMExportPipeline_Panel(Panel):
                 )
 
                 # Make the right column which contains a the buttons for manupulating the UI list.
-                button_col = action_items_ui_list.column(align=False)
+                button_col = action_items_ui_list_split.column(align=False)
                 button_col.operator("action_items.list_add", text="", icon="ADD")
                 button_col.operator("action_items.list_remove", text="", icon="REMOVE")
 
