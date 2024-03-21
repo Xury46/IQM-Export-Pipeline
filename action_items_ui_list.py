@@ -4,6 +4,8 @@ import bpy
 from bpy.types import Action, Armature, Operator, PropertyGroup, UIList
 from bpy.props import BoolProperty, CollectionProperty, FloatProperty, IntProperty, PointerProperty
 
+split_factor: float = 0.4
+
 
 def set_action_item_props(action_item, context):
 
@@ -56,7 +58,7 @@ class ACTIONITEMS_UL_ActionItemList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index, flt_flag):
         if self.layout_type in {"DEFAULT", "COMPACT"}:
             row = layout.row()
-            action_prop_split = row.split(factor=0.5)
+            action_prop_split = row.split(factor=split_factor)
 
             action_side = action_prop_split.row()
             action_side.label(icon="ARMATURE_DATA")

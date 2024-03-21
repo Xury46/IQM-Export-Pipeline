@@ -3,6 +3,7 @@ import bpy
 from bpy.types import Armature, Collection, Operator, Panel, PropertyGroup, Scene
 from bpy.props import EnumProperty, PointerProperty, StringProperty
 from iqm_export import exportIQM
+from . import action_items_ui_list
 
 
 def is_armature_in_collection(settings, armature):
@@ -142,20 +143,18 @@ class IQMExportPipeline_Panel(Panel):
         elif settings.action_list_source == "action_list":
             action_items_box = layout.box()
             row = action_items_box.row()
-            row.prop(settings, "armature_source")
+            row.prop(settings, "armature_source", text="Armature")
 
             if settings.armature_source:
-                PROPERTY_BUTTON_SPLIT_FACTOR = 0.9
-                
                 # Make a split to put the header labels on the left, and a spacer on the right
-                action_items_header_row = action_items_box.row()
-                action_items_header_split = action_items_header_row.split(factor=PROPERTY_BUTTON_SPLIT_FACTOR)
+                action_items_header_row = action_items_box.row(align=True)
 
                 # Make a row to put the Action label in
-                action_prop_split = action_items_header_split.split(factor=0.5)
-                action_side = action_prop_split.row()
-                action_side.label(icon="ARMATURE_DATA")
+                action_prop_split = action_items_header_row.split(factor=action_items_ui_list.split_factor)
+                action_side = action_prop_split.row(align=True)
                 action_side.label(text="Action:")
+                action_side.operator("action_items.list_remove", text="", icon="REMOVE")
+                action_side.operator("action_items.list_add", text="", icon="ADD")
 
                 # Make a row to evenly space the properties in
                 property_side = action_prop_split.grid_flow(row_major=False, columns=4, even_columns=True)
@@ -165,11 +164,10 @@ class IQMExportPipeline_Panel(Panel):
                 property_side.label(text="Loop:")
 
                 # Action Items UI List
-                action_items_ui_list_row = action_items_box.row()
-                action_items_ui_list_split = action_items_ui_list_row.split(factor=PROPERTY_BUTTON_SPLIT_FACTOR)
+                action_items_ui_list_row = action_items_box.row(align=True)
 
                 # Draw the UI list
-                action_items_ui_list_split.template_list(
+                action_items_ui_list_row.template_list(
                     listtype_name="UI_UL_ActionItemList",
                     list_id="DATA_UL_actions",
                     dataptr=settings.armature_source,
@@ -177,11 +175,6 @@ class IQMExportPipeline_Panel(Panel):
                     active_dataptr=settings.armature_source,
                     active_propname="active_action_item_index",
                 )
-
-                # Make the right column which contains a the buttons for manupulating the UI list.
-                button_col = action_items_ui_list_split.column(align=False)
-                button_col.operator("action_items.list_add", text="", icon="ADD")
-                button_col.operator("action_items.list_remove", text="", icon="REMOVE")
 
             else:
                 row = action_items_box.row()
