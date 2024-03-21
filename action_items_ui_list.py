@@ -2,13 +2,16 @@
 
 import bpy
 from bpy.types import Action, Armature, Operator, PropertyGroup, UIList
-from bpy.props import BoolProperty, CollectionProperty, IntProperty, PointerProperty
+from bpy.props import BoolProperty, CollectionProperty, FloatProperty, IntProperty, PointerProperty
 
 
 class ACTIONITEMS_ActionItem(PropertyGroup):
     """Group of properties representing an item in the list."""
 
     action: PointerProperty(name="action", type=Action)
+    frame_start: IntProperty(name="start frame")
+    frame_end: IntProperty(name="end frame")
+    fps: FloatProperty(name="frames per second")
     looping: BoolProperty(name="looping", default=False)
 
     def __str__(self) -> str:
@@ -23,9 +26,12 @@ class ACTIONITEMS_ActionItem(PropertyGroup):
         """
 
         name: str = self.action.name
+        start: int = self.frame_start
+        end: int = self.frame_end
+        fps: float = self.fps
         looping: str = "1" if self.looping else "0"
 
-        return f"{name}::::{looping}"
+        return f"{name}:{start}:{end}:{fps}:{looping}"
 
 
 class ACTIONITEMS_UL_ActionItemList(UIList):
@@ -38,8 +44,11 @@ class ACTIONITEMS_UL_ActionItemList(UIList):
         if self.layout_type in {"DEFAULT", "COMPACT"}:
             row = layout.row()
             row.label(icon="ARMATURE_DATA")
-            row.prop(data=item, property="looping", text="Looping")
             row.prop(data=item, property="action", text="")
+            row.prop(data=item, property="frame_start", text="Start")
+            row.prop(data=item, property="frame_end", text="End")
+            row.prop(data=item, property="fps", text="FPS")
+            row.prop(data=item, property="looping", text="Looping")
 
         elif self.layout_type in {"GRID"}:
             layout.alignment = "CENTER"
