@@ -1,7 +1,11 @@
 import os
+from dataclasses import dataclass
+from typing import Dict
 import bpy
+from math import radians, degrees
+from mathutils import Euler, Matrix, Vector
 from bpy.types import Armature, Collection, Operator, Panel, PropertyGroup, Scene
-from bpy.props import EnumProperty, PointerProperty, StringProperty
+from bpy.props import EnumProperty, FloatProperty, FloatVectorProperty, PointerProperty, StringProperty
 from iqm_export import exportIQM
 from . import action_items_ui_list
 
@@ -49,6 +53,12 @@ class IQMExportPipeline_Export(Operator):
     bl_idname = "export.iqm_pipeline"
     bl_label = "Export IQM via pipeline"
 
+    @dataclass
+    class Transforms:
+        location: Vector
+        rotation_euler: Euler
+        scale: Vector
+
     def execute(self, context):
         settings = context.scene.iqm_export_pipeline_settings
 
@@ -69,9 +79,37 @@ class IQMExportPipeline_Export(Operator):
 
         print(f"Actions to export: {animations_to_export}")
 
+        offset_matrix = Matrix.LocRotScale(
+            settings.offset_location,
+            Euler(settings.offset_rotation, "XYZ"),
+            Vector.Fill(3, settings.offset_scale),
+        )
+
         # Temporarily override the selected objects with the objects from the export_collection
         with context.temp_override(selected_objects=settings.export_collection.all_objects):
 
+            # Offset the transforms
+            original_transforms: Dict[self.Transforms] = {}
+            for obj in context.selected_objects:
+                # Don't offset objects that are children of other objects
+                if obj.parent:
+                    # TODO check for inherit transforms...
+                    continue
+
+                original_transforms[obj.name] = self.Transforms(
+                    obj.location.copy(),
+                    obj.rotation_euler.copy(),
+                    obj.scale.copy(),
+                )
+
+                new_transform = offset_matrix @ obj.matrix_local
+                new_location, new_rotation, new_scale = new_transform.decompose()
+
+                obj.location = new_location
+                obj.rotation_euler = new_rotation.to_euler("XYZ")
+                obj.scale = new_scale
+
+            # Export
             exportIQM(
                 context=bpy.context,
                 filename=os.path.join(file_directory, file_name + file_extention),
@@ -86,6 +124,15 @@ class IQMExportPipeline_Export(Operator):
                 derigify=False,
                 boneorder=None,
             )
+
+            # Reset the transforms
+            for obj_name, transforms in original_transforms.items():
+                obj = bpy.data.objects[obj_name]
+                print(obj_name)
+
+                obj.location = transforms.location
+                obj.rotation_euler = transforms.rotation_euler
+                obj.scale = transforms.scale
 
         return {"FINISHED"}
 
@@ -113,6 +160,12 @@ class IQMExportPipeline_Settings(PropertyGroup):
 
     armature_source: PointerProperty(name="Armature source", type=Armature, poll=is_armature_in_collection)
 
+    offset_location: FloatVectorProperty(name="Location offset", default=(0, 0, -24), subtype="TRANSLATION")
+
+    offset_rotation: FloatVectorProperty(name="Rotation offset", default=(0, 0, radians(90)), subtype="EULER")
+
+    offset_scale: FloatProperty(name="Scale offset", default=32)
+
 
 class IQMExportPipeline_Panel(Panel):
     """Creates a panel in the Output section of the Properties Editor"""
@@ -133,6 +186,15 @@ class IQMExportPipeline_Panel(Panel):
         row.prop(settings, "export_directory")
         row = layout.row()
         row.prop(settings, "file_name")
+
+        offset_box = layout.box()
+        row = offset_box.row(align=True)
+        row.prop(settings, "offset_location")
+        row = offset_box.row(align=True)
+        row.prop(settings, "offset_rotation")
+        row = offset_box.row(align=True)
+        row.prop(settings, "offset_scale")
+
         row = layout.row(align=True)
         row.label(text="Action list source:")
         row.prop(settings, "action_list_source", text="Action list source", expand=True)
