@@ -109,6 +109,9 @@ class IQMExportPipeline_Export(Operator):
                 obj.rotation_euler = new_rotation.to_euler("XYZ")
                 obj.scale = new_scale
 
+            # Force an update so that the transforms are correct at export time
+            context.view_layer.update()
+
             # Export
             exportIQM(
                 context=bpy.context,
